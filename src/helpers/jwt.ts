@@ -1,13 +1,14 @@
 // Other
-import { verify, sign } from 'jsonwebtoken';
+import { verify, sign, SignOptions } from 'jsonwebtoken';
 
 const SECRET = 'AH9SHASHUAUHDUHSUHSADHAHUSDHU';
 
 const signOptions = {
   expiresIn: '12h',
-};
+  algorithm: 'HS256',
+} as SignOptions;
 
-const generateJWT = (user: { id: number; name: string; email: string; }) => {
+const generateJWT = (user: { id: number; name: string; email: string; }): string => {
   const payload = {
     id: user.id,
     name: user.name,
