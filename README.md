@@ -1,4 +1,4 @@
-Boilerplate NodeJS API - by Fernando Calixto
+Boilerplate NodeJS Typescript API - by Fernando Calixto
 (Current Stack: ExpressJS, TypeORM, Typescript and PostgreSQL)
 
 Follow the steps below to run and test the API:

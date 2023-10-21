@@ -28,7 +28,7 @@ AppDataSource.initialize()
       next({ message, status });
     });
 
-    // Generic error treatment (You can pass "status" and "message")
+    // Generic error treatment (You can pass a "status" and a "message")
     app.use((erro, req, res, next) => {
       res.status(erro.status || 500);
       res.json({
@@ -40,6 +40,6 @@ AppDataSource.initialize()
     });
 
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Server running on port ${3000}`));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch(error => console.log(error));
