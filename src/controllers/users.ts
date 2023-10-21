@@ -169,6 +169,8 @@ router.post('/sign_up',
             password: hashedPassword,
           });
 
+          await userRepository.save(user);
+
           return res.status(201).json({
             name: user.name,
             email: user.email,
