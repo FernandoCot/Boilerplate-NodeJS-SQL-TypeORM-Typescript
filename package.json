@@ -29,6 +29,8 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "lint": "eslint src/**/*.{ts,js}",
     "lintFix": "eslint src/**/*.{ts,js} --fix",
+    "runMigrations": "typeorm migration:run",
+    "runSeeds": "typeorm seed:run",
     "reset": "typeorm schema:drop && typeorm schema:sync && typeorm migration:run && typeorm seed:run"
   }
 }
