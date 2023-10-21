@@ -1,21 +1,45 @@
-// Core
+// Importing Core
+import cors from 'cors';
+import morgan from 'morgan';
+import express, { Request, urlencoded, json } from 'express';
+
+// Settings
 import { AppDataSource } from "./data-source";
 
-// Entities
-import { User } from "./entity/User";
+// Controllers
+import controllerUsers from './controllers/users';
 
-AppDataSource.initialize().then(async () => {
-  /* console.log("Inserting a new user into the database...")
-  const user = new User()
-  user.firstName = "Timber"
-  user.lastName = "Saw"
-  user.age = 25
-  await AppDataSource.manager.save(user)
-  console.log("Saved a new user with id: " + user.id)
+AppDataSource.initialize()
+  .then(async () => {
+    // Starting Configs
+    const app = express();
+    app.use(json());
+    app.use(urlencoded({ extended: false }));
+    app.use(cors<Request>());
+    app.use(morgan('dev'));
 
-  console.log("Loading users from the database...")
-  const users = await AppDataSource.manager.find(User)
-  console.log("Loaded users: ", users)
+    // Calling Routes
+    app.use('/users', controllerUsers);
 
-  console.log("Here you can setup and run express / fastify / any other framework.") */
-}).catch(error => console.log(error));
+    // Handling unmatched endpoints
+    app.use((req, res, next) => {
+      const message = "Rota não encontrada";
+      const status = 404;
+      next({ message, status });
+    });
+
+    // Generic error treatment (You can pass "status" and "message")
+    app.use((erro, req, res, next) => {
+      res.status(erro.status || 500);
+      res.json({
+        erro: {
+          status: erro.status || 500,
+          mensagem: erro.message,
+        },
+      });
+    });
+
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${3000}`));
+  })
+  .catch(error => console.log(error));
