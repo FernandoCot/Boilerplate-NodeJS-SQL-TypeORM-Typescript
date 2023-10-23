@@ -1,13 +1,15 @@
-// Importing Core
-import cors from 'cors';
-import morgan from 'morgan';
-import express, { Request, urlencoded, json } from 'express';
+// Core
+import express, { Request, Response, NextFunction, urlencoded, json } from 'express';
 
-// Settings
+// DB - Settings
 import { AppDataSource } from "./data-source";
 
 // Controllers
 import controllerUsers from './controllers/users';
+
+// Other
+import cors from 'cors';
+import morgan from 'morgan';
 
 AppDataSource.initialize()
   .then(async () => {
@@ -22,14 +24,14 @@ AppDataSource.initialize()
     app.use('/users', controllerUsers);
 
     // Handling unmatched endpoints
-    app.use((req, res, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
       const message = "Rota não encontrada";
       const status = 404;
       next({ message, status });
     });
 
     // Generic error treatment (You can pass a "status" and a "message")
-    app.use((erro, req, res, next) => {
+    app.use((erro, req: Request, res: Response, next: NextFunction) => {
       res.status(erro.status || 500);
       res.json({
         erro: {

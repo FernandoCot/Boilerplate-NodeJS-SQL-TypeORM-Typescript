@@ -1,5 +1,5 @@
 // Core
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 
 // Entities
 import { User } from '../entity/User';
@@ -15,7 +15,7 @@ const router = Router();
 const userRepository = AppDataSource.manager.getRepository(User);
 
 // Requests
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', verifyToken, async (req: Request, res: Response) => {
   try {
     const users = await userRepository.find({
       select: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
@@ -35,14 +35,14 @@ router.get('/:id',
       .notEmpty().withMessage("O parâmetro 'id' é obrigatório!")
       .isInt().withMessage("O parâmetro 'id' deve ser um inteiro!"),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     } else {
       try {
         const singleUser = await userRepository.findOne({
-          where: { id: req.params.id },
+          where: { id: parseInt(req.params.id, 10) },
           select: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
         });
 
@@ -65,7 +65,7 @@ router.delete('/:id',
       .notEmpty().withMessage("O parâmetro 'id' é obrigatório!")
       .isInt().withMessage("O parâmetro 'id' deve ser um inteiro!"),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -102,14 +102,14 @@ router.patch('/:id',
       .isString().withMessage("O campo 'senha' deve ser uma string!")
       .isLength({ min: 8, max: 8 }).withMessage('A senha deve ter 8 dígitos!'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     } else {
       try {
         const existentUser = await userRepository.findOne({
-          where: { id: req.params.id },
+          where: { id: parseInt(req.params.id, 10) },
         });
 
         if (existentUser) {
@@ -148,7 +148,7 @@ router.post('/sign_up',
       .isString().withMessage("O campo 'senha' deve ser uma string!")
       .isLength({ min: 8, max: 8 }).withMessage('A senha deve ter 8 dígitos!'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -193,7 +193,7 @@ router.post('/login',
       .isString().withMessage("O campo 'senha' deve ser uma string!")
       .isLength({ min: 8, max: 8 }).withMessage('A senha deve ter 8 dígitos!'),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
