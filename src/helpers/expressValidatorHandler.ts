@@ -1,5 +1,7 @@
 // Core
 import { Response } from 'express';
+
+// Other
 import { Result, ValidationError } from 'express-validator';
 
 export const validatorHandler = (errorsArray: Result<ValidationError>, response: Response, proceedFunction: Function) => {

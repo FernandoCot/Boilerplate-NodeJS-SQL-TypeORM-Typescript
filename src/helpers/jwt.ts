@@ -1,3 +1,6 @@
+// Core
+import { Request, Response, NextFunction } from 'express';
+
 // Other
 import { verify, sign, SignOptions } from 'jsonwebtoken';
 
@@ -19,7 +22,7 @@ const generateJWT = (user: { id: number; name: string; email: string; }): string
 };
 
 // The func below verifies if the token exists and if it's still valid
-const verifyToken = (req, res, next) => {
+const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization;
 
   if (!token) {
