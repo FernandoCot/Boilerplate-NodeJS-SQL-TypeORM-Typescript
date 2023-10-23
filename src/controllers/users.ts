@@ -1,31 +1,20 @@
 // Core
 import { Router, Request, Response } from 'express';
 
-// Entities
-import { User } from '../entity/User';
+// Services
+import { login, signUp, deleteUser, getAllUsers, getUserInfo, updateUser } from '../services/usersService';
 
 // Other
-import { AppDataSource } from '../data-source';
-import { encrypt, decrypt } from '../helpers/encodeData';
-import { generateJWT, verifyToken } from '../helpers/jwt';
+import { verifyToken } from '../helpers/jwt';
 import { param, body, validationResult } from 'express-validator';
+import { validatorHandler } from '../helpers/expressValidatorHandler';
 
 // Instances
 const router = Router();
-const userRepository = AppDataSource.manager.getRepository(User);
 
 // Requests
 router.get('/', verifyToken, async (req: Request, res: Response) => {
-  try {
-    const users = await userRepository.find({
-      select: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
-    });
-
-    return res.status(200).json(users);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).end();
-  }
+  return getAllUsers(res);
 });
 
 router.get('/:id',
@@ -36,26 +25,7 @@ router.get('/:id',
       .isInt().withMessage("O parâmetro 'id' deve ser um inteiro!"),
   ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } else {
-      try {
-        const singleUser = await userRepository.findOne({
-          where: { id: parseInt(req.params.id, 10) },
-          select: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
-        });
-
-        if (singleUser) {
-          return res.status(200).json(singleUser);
-        } else {
-          return res.status(404).json('Usuário inexistente!');
-        }
-      } catch (err) {
-        console.log(err);
-        return res.status(500).end();
-      }
-    }
+    return validatorHandler(validationResult(req), res, () => getUserInfo(req, res));
   });
 
 router.delete('/:id',
@@ -66,23 +36,7 @@ router.delete('/:id',
       .isInt().withMessage("O parâmetro 'id' deve ser um inteiro!"),
   ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } else {
-      try {
-        const deleteSingleUser = await userRepository.delete(req.params.id);
-
-        if (deleteSingleUser) {
-          return res.status(200).json('Usuário deletado com sucesso!');
-        } else {
-          return res.status(404).json('Usuário inexistente!');
-        }
-      } catch (err) {
-        console.log(err);
-        return res.status(500).end();
-      }
-    }
+    return validatorHandler(validationResult(req), res, () => deleteUser(req, res));
   });
 
 router.patch('/:id',
@@ -103,36 +57,7 @@ router.patch('/:id',
       .isLength({ min: 8, max: 8 }).withMessage('A senha deve ter 8 dígitos!'),
   ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } else {
-      try {
-        const existentUser = await userRepository.findOne({
-          where: { id: parseInt(req.params.id, 10) },
-        });
-
-        if (existentUser) {
-          const hashedPassword = await encrypt(req.body.password);
-
-          existentUser.name = req.body.name;
-          existentUser.email = req.body.email;
-          existentUser.password = hashedPassword;
-
-          const updateSingleUser = await userRepository.save(existentUser);
-
-          if (updateSingleUser) {
-            return res.status(200).json('Usuário atualizado com sucesso!');
-          } else {
-            return res.status(404).json('Usuário inexistente!');
-          }
-        } else {
-          return res.status(404).json('Usuário inexistente!');
-        }
-      } catch (err) {
-        return res.status(500).end();
-      }
-    }
+    return validatorHandler(validationResult(req), res, () => updateUser(req, res));
   });
 
 router.post('/sign_up',
@@ -149,38 +74,7 @@ router.post('/sign_up',
       .isLength({ min: 8, max: 8 }).withMessage('A senha deve ter 8 dígitos!'),
   ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } else {
-      try {
-        const existUser = await userRepository.findOne({
-          where: { email: req.body.email },
-        });
-
-        if (existUser) {
-          return res.status(409).json('Esse email já está sendo usado!');
-        } else {
-          const hashedPassword = await encrypt(req.body.password);
-
-          const user = userRepository.create({
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword,
-          });
-
-          await userRepository.save(user);
-
-          return res.status(201).json({
-            name: user.name,
-            email: user.email,
-            token: generateJWT(user),
-          });
-        }
-      } catch (err) {
-        return res.status(422).json(err.errors);
-      }
-    }
+    return validatorHandler(validationResult(req), res, () => signUp(req, res));
   });
 
 router.post('/login',
@@ -194,34 +88,7 @@ router.post('/login',
       .isLength({ min: 8, max: 8 }).withMessage('A senha deve ter 8 dígitos!'),
   ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } else {
-      try {
-        const user = await userRepository.findOne({
-          where: { email: req.body.email },
-        });
-
-        if (user) {
-          const decryptedPass = await decrypt(req.body.password, user.password);
-
-          if (decryptedPass) {
-            return res.status(200).json({
-              name: user.name,
-              email: user.email,
-              token: generateJWT(user),
-            });
-          } else {
-            return res.status(404).json('Informações incorretas!');
-          }
-        } else {
-          return res.status(404).json('Credenciais incorretas!');
-        }
-      } catch (err) {
-        return res.status(404).json(err.errors);
-      }
-    }
+    return validatorHandler(validationResult(req), res, () => login(req, res));
   });
 
 export default router;
