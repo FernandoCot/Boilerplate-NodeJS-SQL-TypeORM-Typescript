@@ -1,7 +1,9 @@
-Boilerplate NodeJS Typescript API - by Fernando Calixto
-(Current Stack: ExpressJS, TypeORM, Typescript and PostgreSQL)
+## Boilerplate NodeJS Typescript API - by Fernando Calixto
+## (Current Stack: ExpressJS, TypeORM, Typescript and PostgreSQL)
 
-## How to Run This Project:
+--------------------------------------
+
+### How to Run This Project:
 Follow the steps below to run and test the API:
 
 1 - Create a local postgres DB using docker
@@ -22,6 +24,6 @@ $ typeorm migration:run && typeorm seed:run
 
 4 - Now, you can run the server using "yarn/npm start".
 
-## Next Steps to Improve This Project:
+### Next Steps to Improve This Project:
 - Add swagger
 - Add tests
